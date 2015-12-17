@@ -3,9 +3,7 @@ A stream is a sequence of data elements made available over time.
 
 The number of elements in the stream is usually very large and unknown a priori. 
 
-A stream sampler extracts a given number of independent sample sets, each with a given number of elements, from the stream.
-
-Only one pass over the stream is possible.
+A stream sampler extracts a given number of independent sample sets, each with a given number of elements, from the stream. Only one pass over the stream is possible.
 
 Each possible selection of nSetSize elements items has an equal probability of occurring.
 
