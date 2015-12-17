@@ -9,4 +9,4 @@ The following 7 unweighted [sampling without replacement](https://en.wikipedia.o
  - X,Y,Z: Based on ["Random Sampling with a Reservoir"](http://www.cs.umd.edu/~samir/498/vitter.pdf) [Jeferey Scott Vitter, 1985]
  - K,L,M: Based on ["Reservoir-Sampling Algorithms of Time Complexity O(n(1+log(N)-log(n)))"](http://dl.acm.org/citation.cfm?id=198435) [Kim-Hung Li, 1994]
 
-The implementations support simultaneous extraction of a given number of independent sample sets.
+The implementations support simultaneous extraction of any given number of independent sample sets.
