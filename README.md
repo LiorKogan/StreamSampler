@@ -11,6 +11,6 @@ The following 7 unweighted [sampling without replacement](https://en.wikipedia.o
 
 Algorithm R is the standard 'textbook algorithm'. Algorithms X,Y,Z,K,L and M offer huge performence improvement by drawing the number of stream elements to skip at each stage, so much less random numbers are generated, especially for very large streams.
 
-In all these papers, the algorithms were formulated such that the fetching of elements from the stream is controlled by the algorithm (An external function, *GetNextElement()*, is called from within the algorithms). Such flow-control is generally less suitable for real-world scenarios. In this implementation, the algorithms were rearranged such that a process can fetch elements from the stream, and a member-function of the stream sampler class (*AddElement()*) should be called.
+In all these papers, the algorithms were formulated such that the fetching of elements from the stream is controlled by the algorithm (An external function, *GetNextElement()*, is called from within the algorithms). Such flow-control is generally less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member-function of the stream sampler class (*AddElement()*) should be called.
 
 This implementation also extend the algorithms by supporting simultaneous extraction of any given number of independent sample sets.
