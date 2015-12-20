@@ -151,13 +151,14 @@ bool StreamSamplerTestUnif()
 bool StreamSamplerTestUniformity()
 {
     cout << "Uniformity Test\n=============\n";
-    cout << "Algorithm R:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_R<uint64_t>>();
-    cout << "Algorithm X:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_X<uint64_t>>();
-    cout << "Algorithm Y:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_Y<uint64_t>>();
-    cout << "Algorithm Z:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_Z<uint64_t>>();
-    cout << "Algorithm K:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_K<uint64_t>>();
-    cout << "Algorithm L:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_L<uint64_t>>();
-    cout << "Algorithm M:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_M<uint64_t>>();
+//  cout << "Algorithm R0:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_R0<uint64_t>>();
+    cout << "Algorithm R: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_R <uint64_t>>();
+    cout << "Algorithm X: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_X <uint64_t>>();
+    cout << "Algorithm Y: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_Y <uint64_t>>();
+    cout << "Algorithm Z: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_Z <uint64_t>>();
+    cout << "Algorithm K: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_K <uint64_t>>();
+    cout << "Algorithm L: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_L <uint64_t>>();
+    cout << "Algorithm M: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_M <uint64_t>>();
     cout << "\n";
     return true;
 }
@@ -195,13 +196,14 @@ bool StreamSamplerTestPerformance()
     const size_t nSampleSize =      1000; // size of sample set
 
     cout << "Performance Test (" << nSampleSize << " / " << nVals << ")\n===========================\n";
-    cout << "Algorithm R:  "; StreamSamplerTestPer<CStreamSamplerWOR_R<uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm X:  "; StreamSamplerTestPer<CStreamSamplerWOR_X<uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm Y:  "; StreamSamplerTestPer<CStreamSamplerWOR_Y<uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm Z:  "; StreamSamplerTestPer<CStreamSamplerWOR_Z<uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm K:  "; StreamSamplerTestPer<CStreamSamplerWOR_K<uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm L:  "; StreamSamplerTestPer<CStreamSamplerWOR_L<uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm M:  "; StreamSamplerTestPer<CStreamSamplerWOR_M<uint64_t>>(nVals, nSampleSize);
+//  cout << "Algorithm R0: "; StreamSamplerTestPer<CStreamSamplerWOR_R0<uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm R:  "; StreamSamplerTestPer<CStreamSamplerWOR_R <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm X:  "; StreamSamplerTestPer<CStreamSamplerWOR_X <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm Y:  "; StreamSamplerTestPer<CStreamSamplerWOR_Y <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm Z:  "; StreamSamplerTestPer<CStreamSamplerWOR_Z <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm K:  "; StreamSamplerTestPer<CStreamSamplerWOR_K <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm L:  "; StreamSamplerTestPer<CStreamSamplerWOR_L <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm M:  "; StreamSamplerTestPer<CStreamSamplerWOR_M <uint64_t>>(nVals, nSampleSize);
     cout << "\n";
     return true;
 }
