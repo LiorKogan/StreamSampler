@@ -22,6 +22,7 @@
 #include <math.h>
 
 using namespace std;
+using namespace StreamSampler;
 
 // ==========================================================================
 // Chi-squared test (for uniformity test)
@@ -32,13 +33,13 @@ using namespace std;
 // gamma(z) when 2*fZ is integer
 double Gamma(double fZ)
 {
-    uint64_t tmp = (uint64_t)(2.*fZ);
-    if (tmp != 2*fZ || fZ == 0)
+    uint64_t tmp = (uint64_t)(2. * fZ);
+    if (tmp != 2 * fZ || fZ == 0)
         throw invalid_argument("Gamma: invalid argument"); 
 
          if (tmp == 1) return 1.7724538509055160272981674833411; // sqrt(PI)
     else if (tmp == 2) return 1.                               ;
-    else               return (fZ-1.) * Gamma(fZ-1.)           ;
+    else               return (fZ - 1.) * Gamma(fZ - 1.)       ;
 }
 
 // CDF of Standard Normal
@@ -52,7 +53,7 @@ double Phi(double fX)
 // PDF of Chi-square
 double PDFchisq(double fV, uint64_t nDF)
 {
-    return pow(fV/2, (nDF-2)/2.) * exp(-fV/2) / (2*Gamma(nDF/2.));
+    return pow(fV / 2, (nDF - 2) / 2.) * exp(-fV / 2) / (2 * Gamma(nDF / 2.));
 }
 
 // CDF of Chi-square
@@ -61,12 +62,12 @@ double CDFchisq(double fV, uint64_t nDF)
 {
     switch (nDF)
     {
-        case 1: return 2.*Phi(sqrt(fV)) - 1.;
-        case 2: return 1. - exp(-fV/2.);
+        case 1: return 2. * Phi(sqrt(fV)) - 1.;
+        case 2: return 1. - exp(-fV / 2.);
         default: break;
     }
 
-    return CDFchisq(fV, nDF-2) - 2*PDFchisq(fV, nDF);
+    return CDFchisq(fV, nDF - 2) - 2*PDFchisq(fV, nDF);
 }
 
 // Return value: p(observed fV or higher) can happen by chance
@@ -83,52 +84,53 @@ double ChiSqTest(double fV, uint64_t nDF)
 template <typename Alg> 
 bool StreamSamplerTestUnif()
 {
-    const size_t   nTrailSets  =     1000; // number of trail sets
-    const uint64_t nTrails     =     1000; // number of trails per trail set
-    const uint64_t nVals       =    10000; // length of stream
-    const uint64_t nSampleSize =       10; // size of sample set
-    const uint64_t nBins       =      100; // vnCounts supposed to be splitted uniformally among bins
+    const size_t   nTrailSets  =  1000; // number of trail sets
+    const uint64_t nTrails     =  1000; // number of trails per trail set
+    const uint64_t nVals       = 10000; // length of stream
+    const uint64_t nSampleSize =    10; // size of sample set
+    const uint64_t nBins       =   100; // vnCounts supposed to be splitted uniformally among bins
 
     vector<double> vfX1(nTrailSets);       // for each trail set: p(observed fV or higher) can happen by chance (with the assumption of independence) (for large nTrails*nSampleSize/nBin)
     vector<double> vfX2(nTrailSets);
 
-    for (size_t nTrailSet = 0; nTrailSet<nTrailSets; ++nTrailSet)   // for each trail set
+    for (size_t nTrailSet = 0; nTrailSet < nTrailSets; ++nTrailSet) // for each trail set
     {
         vector<uint64_t> vnCounts1(nBins); // count sum(instances per bin) for all trails. (sum(vnCounts) = nTrails * nSampleSize)
         vector<uint64_t> vnCounts2(nBins);
 
-        for (uint64_t nTrail = 0; nTrail<nTrails; ++nTrail)        // for each trail
+        Alg Sampler1(1, nSampleSize); // one sample set of nSampleSize samples, different seed for each sample set
+        Alg Sampler2(1, nSampleSize);
+
+        for (uint64_t nTrail = 0; nTrail < nTrails; ++nTrail)       // for each trail
         {
             // ----- type 1 test
-            Alg Sampler1(1, nSampleSize, (nTrailSet<<20) + nTrail); // one sample set of nSampleSize samples, different seed for each sample set
             uint64_t i1 = 0;
 
             while (i1<nVals)
-                i1 += 1 + Sampler1.AddElement(i1 % nBins        );  // type 1 test
+                i1 += 1 + Sampler1.AddElement(i1 % nBins        );
 
-            auto SS1 = Sampler1.GetSampleSets();        
-            for (auto& Set :SS1)            // for each sample set
-                for (auto& n : Set)         // for each sample
-                    ++vnCounts1[(size_t)n]; // inc count of this value
+            auto SS1 = Sampler1.GetSampleSets(); // also reset the samples
+            for (auto& Set :SS1)                 // for each sample set
+                for (auto& n : Set)              // for each sample
+                    ++vnCounts1[(size_t)n];      // inc count of this value
 
             // ----- type 2 test
-            Alg Sampler2(1, nSampleSize, (nTrailSet<<20) + nTrail);
             uint64_t i2 = 0;
 
             while (i2<nVals)
-                i2 += 1 + Sampler2.AddElement(i2 / (nVals/nBins));  // type 2 test
+                i2 += 1 + Sampler2.AddElement(i2 / (nVals / nBins));
 
-            auto SS2 = Sampler2.GetSampleSets();        
-            for (auto& Set :SS2)            // for each sample set
-                for (auto& n : Set)         // for each sample
-                    ++vnCounts2[(size_t)n]; // inc count of this value
+            auto SS2 = Sampler2.GetSampleSets(); // also reset the samples
+            for (auto& Set :SS2)                 // for each sample set
+                for (auto& n : Set)              // for each sample
+                    ++vnCounts2[(size_t)n];      // inc count of this value
         }
 
         // check for uniformity (same count per bin) using chi-square test
         // see "The Art of Computer Programming" [Knuth] Vol.2, 3.3.1.
         // fV is calculated according to page 43 formula (8)
-        double   fV1 = inner_product(begin(vnCounts1), end(vnCounts1), begin(vnCounts1), 0.) / (nTrails*nSampleSize/nBins) - (nTrails*nSampleSize);
-        double   fV2 = inner_product(begin(vnCounts2), end(vnCounts2), begin(vnCounts2), 0.) / (nTrails*nSampleSize/nBins) - (nTrails*nSampleSize);
+        double   fV1 = inner_product(begin(vnCounts1), end(vnCounts1), begin(vnCounts1), 0.) / (nTrails * nSampleSize / nBins) - (nTrails * nSampleSize);
+        double   fV2 = inner_product(begin(vnCounts2), end(vnCounts2), begin(vnCounts2), 0.) / (nTrails * nSampleSize / nBins) - (nTrails * nSampleSize);
         uint64_t nDF = nBins - 1;            // degrees of freedom
         
         // p(observed fV or higher) can happen by chance (with assumption of independence) (for large nTrails*nSampleSize/nBin)
@@ -151,14 +153,14 @@ bool StreamSamplerTestUnif()
 bool StreamSamplerTestUniformity()
 {
     cout << "Uniformity Test\n=============\n";
-//  cout << "Algorithm R0:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_R0<uint64_t>>();
-    cout << "Algorithm R: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_R <uint64_t>>();
-    cout << "Algorithm X: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_X <uint64_t>>();
-    cout << "Algorithm Y: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_Y <uint64_t>>();
-    cout << "Algorithm Z: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_Z <uint64_t>>();
-    cout << "Algorithm K: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_K <uint64_t>>();
-    cout << "Algorithm L: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_L <uint64_t>>();
     cout << "Algorithm M: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_M <uint64_t>>();
+    cout << "Algorithm L: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_L <uint64_t>>();
+    cout << "Algorithm K: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_K <uint64_t>>();
+    cout << "Algorithm Z: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_Z <uint64_t>>();
+    cout << "Algorithm Y: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_Y <uint64_t>>();
+    cout << "Algorithm X: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_X <uint64_t>>();
+    cout << "Algorithm R: \n"; StreamSamplerTestUnif<CStreamSamplerWOR_R <uint64_t>>();
+    cout << "Algorithm R0:\n"; StreamSamplerTestUnif<CStreamSamplerWOR_R0<uint64_t>>();
     cout << "\n";
     return true;
 }
@@ -196,17 +198,17 @@ bool StreamSamplerTestPerformance()
     const size_t nSampleSize =      1000; // size of sample set
 
     cout << "Performance Test (" << nSampleSize << " / " << nVals << ")\n===========================\n";
-//  cout << "Algorithm R0: "; StreamSamplerTestPer<CStreamSamplerWOR_R0<uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm R:  "; StreamSamplerTestPer<CStreamSamplerWOR_R <uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm X:  "; StreamSamplerTestPer<CStreamSamplerWOR_X <uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm Y:  "; StreamSamplerTestPer<CStreamSamplerWOR_Y <uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm Z:  "; StreamSamplerTestPer<CStreamSamplerWOR_Z <uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm K:  "; StreamSamplerTestPer<CStreamSamplerWOR_K <uint64_t>>(nVals, nSampleSize);
-    cout << "Algorithm L:  "; StreamSamplerTestPer<CStreamSamplerWOR_L <uint64_t>>(nVals, nSampleSize);
     cout << "Algorithm M:  "; StreamSamplerTestPer<CStreamSamplerWOR_M <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm L:  "; StreamSamplerTestPer<CStreamSamplerWOR_L <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm K:  "; StreamSamplerTestPer<CStreamSamplerWOR_K <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm Z:  "; StreamSamplerTestPer<CStreamSamplerWOR_Z <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm Y:  "; StreamSamplerTestPer<CStreamSamplerWOR_Y <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm X:  "; StreamSamplerTestPer<CStreamSamplerWOR_X <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm R:  "; StreamSamplerTestPer<CStreamSamplerWOR_R <uint64_t>>(nVals, nSampleSize);
+    cout << "Algorithm R0: "; StreamSamplerTestPer<CStreamSamplerWOR_R0<uint64_t>>(nVals, nSampleSize);
     cout << "\n";
     return true;
 }
 
 // ==========================================================================
-// static auto b = StreamSamplerTestUniformity() && StreamSamplerTestPerformance();
+static auto b = StreamSamplerTestUniformity() && StreamSamplerTestPerformance();
