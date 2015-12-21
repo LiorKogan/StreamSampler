@@ -98,7 +98,7 @@ bool StreamSamplerTestUnif()
         vector<uint64_t> vnCounts1(nBins); // count sum(instances per bin) for all trails. (sum(vnCounts) = nTrails * nSampleSize)
         vector<uint64_t> vnCounts2(nBins);
 
-        Alg Sampler1(1, nSampleSize); // one sample set of nSampleSize samples, different seed for each sample set
+        Alg Sampler1(1, nSampleSize);      // one sample set of nSampleSize samples
         Alg Sampler2(1, nSampleSize);
 
         for (uint64_t nTrail = 0; nTrail < nTrails; ++nTrail)       // for each trail
