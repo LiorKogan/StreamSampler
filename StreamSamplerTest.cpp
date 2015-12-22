@@ -25,6 +25,58 @@ using namespace std;
 using namespace StreamSampler;
 
 // ==========================================================================
+// Example
+// ==========================================================================
+
+// a simple stream of incremental integers: 0..nStreamSize-1
+class SimpleStream
+{
+public:
+    SimpleStream(size_t nStreamSize)
+        : m_nStreamSize(nStreamSize), m_nNextElement(0)
+    {}
+
+    bool GetNextElement(size_t& Element)
+    {
+        if (m_nNextElement == m_nStreamSize)
+            return false; // end of stream
+
+        Element = m_nNextElement++;
+        return true;
+    }
+
+private:
+    size_t m_nStreamSize ;
+    size_t m_nNextElement;
+};
+
+bool StreamSamplerExample()
+{
+    SimpleStream                Stream(1000)         ; // 0..999
+    CStreamSamplerWOR_Z<size_t> StreamSampler(10, 10); // 10 sample sets of 10 elements each
+
+    uint64_t nSkip = 0;                                // number of future stream elements to skip
+    size_t   Element  ;                                // stream element
+
+    while (Stream.GetNextElement(Element))             // while not end of stream
+        nSkip ? --nSkip : nSkip = StreamSampler.AddElement(Element);
+
+    auto SampleSets = StreamSampler.GetSampleSets();   // get sample sets
+
+    for (const auto& SampleSet : SampleSets)           // for each sample set
+    {
+        for (const auto& Sample : SampleSet)           // for each sample
+            cout << Sample << " ";                     // print it
+
+        cout << "\n";
+    }
+
+    return true;
+}
+
+// static auto a = StreamSamplerExample();
+
+// ==========================================================================
 // Chi-squared test (for uniformity test)
 // code based on "df.c" and "funct.c" from the Marsaglia's Diehard Battery of Tests of Randomness
 // (http://www.stat.fsu.edu/pub/diehard/)
@@ -34,7 +86,7 @@ using namespace StreamSampler;
 double Gamma(double fZ)
 {
     uint64_t tmp = (uint64_t)(2. * fZ);
-    if (tmp != 2 * fZ || fZ == 0)
+    if (tmp != 2. * fZ || fZ == 0)
         throw invalid_argument("Gamma: invalid argument"); 
 
          if (tmp == 1) return 1.7724538509055160272981674833411; // sqrt(PI)
@@ -46,14 +98,14 @@ double Gamma(double fZ)
 double Phi(double fX)
 {
     double tmp = fX / sqrt(2.);
-    tmp        = 1 + erf(tmp); 
-    return tmp / 2;
+    tmp        = 1. + erf(tmp); 
+    return tmp / 2.;
 }
 
 // PDF of Chi-square
 double PDFchisq(double fV, uint64_t nDF)
 {
-    return pow(fV / 2, (nDF - 2) / 2.) * exp(-fV / 2) / (2 * Gamma(nDF / 2.));
+    return pow(fV / 2., (nDF - 2) / 2.) * exp(-fV / 2.) / (2. * Gamma(nDF / 2.));
 }
 
 // CDF of Chi-square
@@ -106,22 +158,22 @@ bool StreamSamplerTestUnif()
             // ----- type 1 test
             uint64_t i1 = 0;
 
-            while (i1<nVals)
+            while (i1 < nVals)
                 i1 += 1 + Sampler1.AddElement(i1 % nBins        );
 
             auto SS1 = Sampler1.GetSampleSets(); // also reset the samples
-            for (auto& Set :SS1)                 // for each sample set
+            for (auto& Set : SS1)                // for each sample set
                 for (auto& n : Set)              // for each sample
                     ++vnCounts1[(size_t)n];      // inc count of this value
 
             // ----- type 2 test
             uint64_t i2 = 0;
 
-            while (i2<nVals)
+            while (i2 < nVals)
                 i2 += 1 + Sampler2.AddElement(i2 / (nVals / nBins));
 
             auto SS2 = Sampler2.GetSampleSets(); // also reset the samples
-            for (auto& Set :SS2)                 // for each sample set
+            for (auto& Set : SS2)                // for each sample set
                 for (auto& n : Set)              // for each sample
                     ++vnCounts2[(size_t)n];      // inc count of this value
         }
@@ -139,11 +191,11 @@ bool StreamSamplerTestUnif()
     }
 
     // avrg vfX for all trail sets. should be around 0.5
-    double fAvrgP1 = accumulate(vfX1.begin(), vfX1.end(), 0.0) / vfX1.size();
+    double fAvrgP1 = accumulate(vfX1.begin(), vfX1.end(), 0.) / vfX1.size();
     cout << "Test 1: Avrg p(observed fV or higher): " << fAvrgP1 << "     Should be around 0.5 ---> ";
     cout << ((fabs(fAvrgP1 - 0.5) < 0.05) ? "PASS\n" : "FAIL\n");
 
-    double fAvrgP2 = accumulate(vfX2.begin(), vfX2.end(), 0.0) / vfX2.size();
+    double fAvrgP2 = accumulate(vfX2.begin(), vfX2.end(), 0.) / vfX2.size();
     cout << "Test 2: Avrg p(observed fV or higher): " << fAvrgP2 << "     Should be around 0.5 ---> ";
     cout << ((fabs(fAvrgP2 - 0.5) < 0.05) ? "PASS\n" : "FAIL\n");
     return true;
@@ -172,16 +224,16 @@ bool StreamSamplerTestUniformity()
 template <typename Alg> 
 bool StreamSamplerTestPer(size_t nVals, size_t nSampleSize) // length of stream, size of sample set
 {
-    uint64_t nTrail   = 0;
-    auto     base     = chrono::high_resolution_clock::now()       ;
-    auto     TimeDiff = chrono::high_resolution_clock::now() - base;
+    uint64_t nTrail   = 0                                   ;
+    auto     base     = chrono::high_resolution_clock::now();
+    auto     TimeDiff = base - base                         ;
     
     while (chrono::duration_cast<chrono::nanoseconds>(TimeDiff).count() < 10000000000) // 10 seconds
     {
         ++nTrail;
         Alg Sampler(1, nSampleSize, nTrail); // one sample set of nSampleSize samples, different seed for each sample set
         uint64_t i = 0;
-        while (i<nVals)
+        while (i < nVals)
             i += 1 + Sampler.AddElement(i);
 
         TimeDiff = chrono::high_resolution_clock::now() - base;
@@ -211,4 +263,4 @@ bool StreamSamplerTestPerformance()
 }
 
 // ==========================================================================
-static auto b = StreamSamplerTestUniformity() && StreamSamplerTestPerformance();
+// static auto b = StreamSamplerTestUniformity() && StreamSamplerTestPerformance();
