@@ -9,10 +9,12 @@ The following 7 unweighted [sampling without replacement](https://en.wikipedia.o
  - X,Y,Z: Presented in ["Random Sampling with a Reservoir"](http://www.cs.umd.edu/~samir/498/vitter.pdf) [Jeferey Scott Vitter, 1985]
  - K,L,M: Presented in ["Reservoir-Sampling Algorithms of Time Complexity O(n(1+log(N)-log(n)))"](http://dl.acm.org/citation.cfm?id=198435) [Kim-Hung Li, 1994]
 
-Algorithm R is the standard 'textbook algorithm'. Algorithms X,Y,Z,K,L and M offer huge performence improvement by drawing the number of stream elements to skip at each stage, so much less random numbers are generated, especially for very large streams.
+Algorithm R is the standard 'textbook algorithm'. Algorithms X,Y,Z,K,L and M offer huge performance improvement by drawing the number of stream elements to skip at each stage, so much less random numbers are generated, especially for very large streams. Both Z,K,L and M are typically 100's of times faster than R, while M is usually the most performant. StreamSamplerTest.h contains a benchmark function named *StreamSamplerTestPerformance()*.
 
-In all these papers, the algorithms were formulated such that the fetching of elements from the stream is controlled by the algorithm (An external function, *GetNextElement()*, is called from within the algorithms). Such flow-control is generally less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member-function of the stream sampler class (*AddElement()*) should be called.
+In all these papers, the algorithms were formulated such that the fetching of elements from the stream is controlled by the algorithm (An external function, *GetNextElement()*, is called from within the algorithms). Such flow-control is generally less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member-function of the stream sampler class (*AddElement*) should be called.
 
 This implementation also extend the algorithms by supporting simultaneous extraction of any given number of independent sample sets.
 
-The code is written in C++11 and compiled using MSVC 2015.
+Two versions of *AddElement* are implemented: one using copy semantics (*AddElement(const ElementType& Element)*) and one using move semantics (*AddElement(ElementType&& Element)*). Both functions return the number of future stream elements the caller should skip before calling *AddElement* again.
+
+The code is written in C++11.
