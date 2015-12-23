@@ -11,6 +11,6 @@
 #pragma once
 
 // ==========================================================================
-bool StreamSamplerExample        ();
-bool StreamSamplerTestUniformity ();
-bool StreamSamplerTestPerformance();
+bool StreamSamplerExample             (); // example: using a StreamSampler
+bool StreamSamplerTestUniformity      (); // Uniformity test for StreamSamplers
+bool StreamSamplerPerformanceBenchmark(); // Performance benchmark for StreamSamplers
