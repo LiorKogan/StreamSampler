@@ -22,7 +22,7 @@ Algorithm R is the standard 'textbook algorithm'. Algorithms X,Y,Z,K,L and M off
 
 In all these papers, the algorithms were formulated such that the fetching of elements from the stream is controlled by the algorithm (An external function, *GetNextElement()*, is called from within the algorithms). Such flow-control is generally less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member-function of the stream sampler class (*AddElement*) should be called.
 
-This implementation also extend the algorithms by supporting simultaneous extraction of any given number of independent sample sets.
+This implementation also extends the algorithms by supporting simultaneous extraction of any given number of independent sample sets.
 
 Two versions of *AddElement* are implemented: one using copy semantics (*AddElement(const ElementType& Element)*) and one using move semantics (*AddElement(ElementType&& Element)*). Both functions return the number of future stream elements the caller should skip before calling *AddElement* again.
 
