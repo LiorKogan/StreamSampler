@@ -15,7 +15,7 @@
 #include "StreamSampler.h"
 
 #include <chrono>
-#include <iostream> // cout
+#include <iostream>    // cout
 #include <vector>
 #include <numeric>
 #include <functional>
@@ -50,10 +50,11 @@ private:
     size_t m_nNextElement;
 };
 
+// example: using a StreamSampler
 bool StreamSamplerExample()
 {
     SimpleStream                Stream(1000)         ; // 0..999
-    CStreamSamplerWOR_Z<size_t> StreamSampler(10, 10); // 10 sample sets of 10 elements each
+    CStreamSamplerWOR_Z<size_t> StreamSampler(10, 10); // 10 sample sets of 10 samples each
 
     uint64_t nSkip = 0;                                // number of future stream elements to skip
     size_t   Element  ;                                // stream element
@@ -85,21 +86,21 @@ bool StreamSamplerExample()
 // gamma(z) when 2*fZ is integer
 double Gamma(double fZ)
 {
-    uint64_t tmp = (uint64_t)(2. * fZ);
-    if (tmp != 2. * fZ || fZ == 0)
+    uint64_t nTmp = (uint64_t)(2. * fZ);
+    if (nTmp != 2. * fZ || fZ == 0)
         throw invalid_argument("Gamma: invalid argument"); 
 
-         if (tmp == 1) return 1.7724538509055160272981674833411; // sqrt(PI)
-    else if (tmp == 2) return 1.                               ;
-    else               return (fZ - 1.) * Gamma(fZ - 1.)       ;
+         if (nTmp == 1) return 1.7724538509055160272981674833411; // sqrt(PI)
+    else if (nTmp == 2) return 1.                               ;
+    else                return (fZ - 1.) * Gamma(fZ - 1.)       ;
 }
 
 // CDF of Standard Normal
 double Phi(double fX)
 {
-    double tmp = fX / sqrt(2.);
-    tmp        = 1. + erf(tmp); 
-    return tmp / 2.;
+    double fTmp = fX / sqrt(2.);
+    fTmp        = 1. + erf(fTmp); 
+    return fTmp / 2.;
 }
 
 // PDF of Chi-square
@@ -130,7 +131,7 @@ double ChiSqTest(double fV, uint64_t nDF)
 }
 
 // ==========================================================================
-// Uniformity test
+// // Uniformity test for StreamSamplers
 // ==========================================================================
 
 template <typename Alg> 
@@ -218,7 +219,7 @@ bool StreamSamplerTestUniformity()
 }
 
 // ==========================================================================
-// Performance test
+// // Performance benchmark for StreamSamplers
 // ==========================================================================
 
 template <typename Alg> 
@@ -244,7 +245,7 @@ bool StreamSamplerTestPer(size_t nVals, size_t nSampleSize) // length of stream,
 }
 
 // --------------------------------------------------------------------------
-bool StreamSamplerTestPerformance()
+bool StreamSamplerPerformanceBenchmark()
 {
     const size_t nVals       = 100000000; // length of stream
     const size_t nSampleSize =      1000; // size of sample set
@@ -263,4 +264,4 @@ bool StreamSamplerTestPerformance()
 }
 
 // ==========================================================================
-// static auto b = StreamSamplerTestUniformity() && StreamSamplerTestPerformance();
+// static auto b = StreamSamplerTestUniformity() && StreamSamplerPerformanceBenchmark();
