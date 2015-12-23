@@ -18,13 +18,14 @@
 // ==========================================================================
 namespace StreamSampler {
 
-using namespace std;
+// A stream is a sequence of data elements made available over time.
+// The number of elements in the stream is usually large and unknown a priori.
 
-// A stream is a sequence of data elements made available over time. 
-// The number of elements in the stream is usually very large and unknown a priori. 
-// A stream sampler extracts nSampleSets independent sample sets, each with nSetSize elements, from the stream.
-// Only one pass over the stream is possible.
-// Each possible selection of nSetSize elements items has an equal probability of occurring.
+// A stream sampler extracts a sample set with a given size from a stream.
+// Each possible sample set (of the given size) has an equal probability of being extracted. 
+// A stream sampler is an online algorithm: The size of the input is unknown, and only one pass over the stream is possible.
+
+using namespace std;
 
 // ==========================================================================
 // RandomSeed
@@ -33,14 +34,21 @@ using namespace std;
 template <typename SeedType>
 SeedType RandomSeed()
 {
-    random_device rd;
+    throw invalid_argument("please implement RandomSeed() according to the RNE used");
+}
 
-    if (is_same<SeedType, uint32_t>::value)      // if SeedType is uint32_t: return 32-bit seed
-        return rd();
-    else if (is_same<SeedType, uint64_t>::value) // if SeedType is uint64_t: return 64-bit seed
-        return ((uint64_t)rd() << 32) | rd();
-    else
-        throw invalid_argument("please modify RandomSeed() according to the RNE used");
+template <uint32_t>
+uint32_t RandomSeed()
+{
+    random_device rd;
+    return rd();
+}
+
+template <uint64_t>
+uint64_t RandomSeed()
+{
+    random_device rd;
+    return ((uint64_t)rd() << 32) | rd();
 }
 
 // ==========================================================================
