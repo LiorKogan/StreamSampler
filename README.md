@@ -6,11 +6,11 @@ Copyright 2015 Lior Kogan (koganlior1@gmail.com)
 
 Released under the Apache License, Version 2.0
 
----
+--
 
 A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of data elements made available over time. The number of elements in the stream is usually large and unknown a priori. 
 
-A **stream sampler** extracts a sample set with a given size from a stream. Each possible sample set (of the given size) has an equal probability of being extracted. A stream sampler is an [online algorithm](https://en.wikipedia.org/wiki/Online_algorithm): The size of the input is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. 
+A **stream sampler** extracts one or more sample sets, each with a given number of elements, from a stream. Each possible sample set (of the given size) has an equal probability of being extracted. A stream sampler is an [online algorithm](https://en.wikipedia.org/wiki/Online_algorithm): The size of the input is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. 
 
 The following 7 unweighted [sampling without replacement](https://en.wikipedia.org/wiki/Simple_random_sample) [reservoir](https://en.wikipedia.org/wiki/Reservoir_sampling) [randomized](https://en.wikipedia.org/wiki/Randomized_algorithm) algorithms are implemented:
 
