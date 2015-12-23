@@ -17,6 +17,6 @@ This implementation also extend the algorithms by supporting simultaneous extrac
 
 Two versions of *AddElement* are implemented: one using copy semantics (*AddElement(const ElementType& Element)*) and one using move semantics (*AddElement(ElementType&& Element)*). Both functions return the number of future stream elements the caller should skip before calling *AddElement* again.
 
-*StreamSamplerTest* contains a usage example: *StreamSamplerExample()*, a comparative benchmark function *StreamSamplerTestPerformance()* and a uniformity test function *StreamSamplerTestUniformity()*.
+*StreamSamplerTest* contains a usage example: *StreamSamplerExample()*, a comparative performance benchmark function *StreamSamplerPerformanceBenchmark()* and a uniformity test function *StreamSamplerTestUniformity()*.
 
 The code is written in C++11.
