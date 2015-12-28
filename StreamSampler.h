@@ -31,24 +31,17 @@ using namespace std;
 // RandomSeed
 // ==========================================================================
 
-template <typename SeedType>
-SeedType RandomSeed()
-{
-    throw invalid_argument("please implement RandomSeed() according to the RNE used");
-}
-
-template <uint32_t>
-uint32_t RandomSeed()
+template <typename RNE> // Random Number Engine
+static typename RNE::result_type RandomSeed()
 {
     random_device rd;
-    return rd();
-}
 
-template <uint64_t>
-uint64_t RandomSeed()
-{
-    random_device rd;
-    return ((uint64_t)rd() << 32) | rd();
+    if (is_same<typename RNE::result_type, uint32_t>::value)      // if RNE::result_type is uint32_t: return 32-bit seed
+        return rd();
+    else if (is_same<typename RNE::result_type, uint64_t>::value) // if RNE::result_type is uint64_t: return 64-bit seed
+        return ((uint64_t)rd() << 32) | rd();
+    else
+        throw invalid_argument("please modify StreamSampler::RandomSeed() according to the RNE used");
 }
 
 // ==========================================================================
@@ -60,9 +53,9 @@ template <typename ElementType, typename RNE = mt19937_64> // Random Number Engi
 class CStreamSampler
 {
 public:
-    CStreamSampler(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                   size_t                    nSetSize                                       ,   // [i] size of each sample set
-                   typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] Random Number Engine seed
+    CStreamSampler(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                   size_t                    nSetSize                 ,   // [i] size of each sample set
+                   typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] Random Number Engine seed
 
     // return the number of future stream elements the caller should skip before calling AddElement again
     virtual uint64_t AddElement(const ElementType&  Element) = 0;
@@ -78,13 +71,12 @@ public:
     virtual void Reset();
 
 protected:
+    bool                        m_bValid     ; // invalidated when calling GetSampleSets(). validated on construction, and on AddElement() if invalid
     const size_t                m_nSampleSets; // number of independent sample sets
     const size_t                m_nSetSize   ; // size of each sample set
-
     vector<vector<ElementType>> m_vSampleSets; // for each sample set: vector of samples (reservoir)
-    bool                        m_bValid     ; // invalidated when calling GetSampleSets(). validated on costruction, and on AddElement() if invalid
     uint64_t                    m_nElements  ; // number of stream elements seen so far
-    vector<RNE>                 m_vRndGen    ; // random number engine. see note in constructor's impl.
+    vector<RNE>                 m_vRndGen    ; // for each sample set: random number engine. see note in constructor's impl.
 };
 
 // ==========================================================================
@@ -97,9 +89,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR_R0 : public CStreamSampler<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR_R0(size_t                    nSampleSets                                    ,  // [i] number of independent sample sets
-                         size_t                    nSetSize                                       ,  // [i] size of each sample set
-                         typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ) // [i] RNE seed
+    CStreamSamplerWOR_R0(size_t                    nSampleSets              ,  // [i] number of independent sample sets
+                         size_t                    nSetSize                 ,  // [i] size of each sample set
+                         typename RNE::result_type nSeed = RandomSeed<RNE>() ) // [i] RNE seed
         : CStreamSampler<ElementType, RNE>(nSampleSets, nSetSize, nSeed) {}
 
     // always return 0 (no skip)
@@ -116,9 +108,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR : public CStreamSampler<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                      size_t                    nSetSize                                       ,   // [i] size of each sample set
-                      typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] RNE seed
+    CStreamSamplerWOR(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                      size_t                    nSetSize                 ,   // [i] size of each sample set
+                      typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
     // return the number of future stream elements the caller should skip before calling AddElement again
     virtual uint64_t AddElement(const ElementType&  Element) override;
@@ -151,9 +143,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR_R : public CStreamSamplerWOR<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR_R(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                        size_t                    nSetSize                                       ,   // [i] size of each sample set
-                        typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] RNE seed
+    CStreamSamplerWOR_R(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                        size_t                    nSetSize                 ,   // [i] size of each sample set
+                        typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
 private:
     void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
@@ -167,9 +159,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR_X : public CStreamSamplerWOR<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR_X(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                        size_t                    nSetSize                                       ,   // [i] size of each sample set
-                        typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] RNE seed
+    CStreamSamplerWOR_X(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                        size_t                    nSetSize                 ,   // [i] size of each sample set
+                        typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
 private:
     void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
@@ -183,9 +175,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR_Y : public CStreamSamplerWOR<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR_Y(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                        size_t                    nSetSize                                       ,   // [i] size of each sample set
-                        typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] RNE seed
+    CStreamSamplerWOR_Y(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                        size_t                    nSetSize                 ,   // [i] size of each sample set
+                        typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
 private:
     void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
@@ -199,9 +191,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR_Z : public CStreamSamplerWOR<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR_Z(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                        size_t                    nSetSize                                       ,   // [i] size of each sample set
-                        typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] RNE seed
+    CStreamSamplerWOR_Z(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                        size_t                    nSetSize                 ,   // [i] size of each sample set
+                        typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
     virtual void Reset() override;
 
@@ -219,9 +211,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR_K : public CStreamSamplerWOR<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR_K(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                        size_t                    nSetSize                                       ,   // [i] size of each sample set
-                        typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] RNE seed
+    CStreamSamplerWOR_K(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                        size_t                    nSetSize                 ,   // [i] size of each sample set
+                        typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
     virtual void Reset() override;
 
@@ -240,9 +232,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR_L : public CStreamSamplerWOR<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR_L(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                        size_t                    nSetSize                                       ,   // [i] size of each sample set
-                        typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] RNE seed
+    CStreamSamplerWOR_L(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                        size_t                    nSetSize                 ,   // [i] size of each sample set
+                        typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
     virtual void Reset() override;
 
@@ -260,9 +252,9 @@ template <typename ElementType, typename RNE = mt19937_64>
 class CStreamSamplerWOR_M : public CStreamSamplerWOR<ElementType, RNE>
 {
 public:
-    CStreamSamplerWOR_M(size_t                    nSampleSets                                    ,   // [i] number of independent sample sets
-                        size_t                    nSetSize                                       ,   // [i] size of each sample set
-                        typename RNE::result_type nSeed = RandomSeed<typename RNE::result_type>() ); // [i] RNE seed
+    CStreamSamplerWOR_M(size_t                    nSampleSets              ,   // [i] number of independent sample sets
+                        size_t                    nSetSize                 ,   // [i] size of each sample set
+                        typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
     virtual void Reset() override;
 
@@ -291,9 +283,10 @@ template <typename ElementType, typename RNE>
 CStreamSampler<ElementType, RNE>::CStreamSampler(size_t                    nSampleSets,  // [i] number of independent sample sets
                                                  size_t                    nSetSize   ,  // [i] size of each sample set
                                                  typename RNE::result_type nSeed       ) // [i] type of seed: as type of 1st class template parameter of mt19937_64
-    : m_nSampleSets(nSampleSets), m_nSetSize(nSetSize),
+    : m_bValid(true), 
+      m_nSampleSets(nSampleSets), m_nSetSize(nSetSize),
       m_vSampleSets(nSampleSets, vector<ElementType>(nSetSize)),
-      m_bValid(true), m_nElements(0)
+      m_nElements(0)
 {
     if (0 == nSampleSets) throw invalid_argument("Stream Sampler: 0 sample sets");
     if (0 == nSetSize   ) throw invalid_argument("Stream Sampler: sample size 0");
@@ -724,7 +717,7 @@ inline void CStreamSamplerWOR_K<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
         nS = (uint64_t)floor(fX);
 
         // test if u<=h(s)/cg(x)
-        double fRHS = (this->m_nElements + fX -m_fHs) / (nTerm + nS) * nTerm / (this->m_nElements - m_fHs);
+        double fRHS = (this->m_nElements + fX - m_fHs) / (nTerm + nS) * nTerm / (this->m_nElements - m_fHs);
         double fLHS = pow(fU * (this->m_nElements + 1.) / (nTerm - 1) / fRHS, 1. / this->m_nSetSize);
 
         if (fLHS <= fRHS)
