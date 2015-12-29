@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Streamsampler : A stream sampler extracts one or more sample sets, each with a given number of elements, from a stream. Each possible sample set (of the given size) has an equal probability of being extracted. A stream sampler is an online algorithm: The size of the input is unknown, and only one pass over the stream is possible.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Streamsampler</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/LiorKogan/StreamSampler">View on GitHub</a>
+
+          <h1 id="project_title">Streamsampler</h1>
+          <h2 id="project_tagline">A stream sampler extracts one or more sample sets, each with a given number of elements, from a stream. Each possible sample set (of the given size) has an equal probability of being extracted. A stream sampler is an online algorithm: The size of the input is unknown, and only one pass over the stream is possible.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/LiorKogan/StreamSampler/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/LiorKogan/StreamSampler/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="streamsampler" class="anchor" href="#streamsampler" aria-hidden="true"><span class="octicon octicon-link"></span></a>StreamSampler</h1>
+
+<p>Header-only C++11 library</p>
+
+<p>Copyright 2015 Lior Kogan (<a href="mailto:koganlior1@gmail.com">koganlior1@gmail.com</a>)</p>
+
+<p>Released under the Apache License, Version 2.0</p>
+
+<h2></h2>
+
+<p>A <a href="https://en.wikipedia.org/wiki/Stream_(computing)">stream</a> is a sequence of data elements made available over time. The number of elements in the stream is usually large and unknown a priori. </p>
+
+<p>A <strong>stream sampler</strong> extracts one or more sample sets, each with a given number of elements, from a stream. Each possible sample set (of the given size) has an equal probability of being extracted. A stream sampler is an <a href="https://en.wikipedia.org/wiki/Online_algorithm">online algorithm</a>: The size of the input is unknown, and only <a href="https://en.wikipedia.org/wiki/One-pass_algorithm">one pass</a> over the stream is possible. </p>
+
+<p>The following 7 unweighted <a href="https://en.wikipedia.org/wiki/Simple_random_sample">sampling without replacement</a> <a href="https://en.wikipedia.org/wiki/Reservoir_sampling">reservoir</a> <a href="https://en.wikipedia.org/wiki/Randomized_algorithm">randomized</a> algorithms are implemented:</p>
+
+<ul>
+<li>R    : Presented in <a href="https://books.google.co.il/books?id=Zu-HAwAAQBAJ&amp;printsec=frontcover&amp;hl=iw&amp;source=gbs_ge_summary_r&amp;cad=0#v=onepage&amp;q&amp;f=false">"The Art of Computer Programming" [Knuth] Vol.2, 3.4.2 Algorithm R</a> (Reservoir Sampling) attributed to Waterman, modified according to Ex.10</li>
+<li>X,Y,Z: Presented in <a href="http://www.cs.umd.edu/%7Esamir/498/vitter.pdf">"Random Sampling with a Reservoir"</a> [Jeferey Scott Vitter, 1985]</li>
+<li>K,L,M: Presented in <a href="http://dl.acm.org/citation.cfm?id=198435">"Reservoir-Sampling Algorithms of Time Complexity O(n(1+log(N)-log(n)))"</a> [Kim-Hung Li, 1994]</li>
+</ul>
+
+<p>Algorithm R is the standard 'textbook algorithm'. Algorithms X,Y,Z,K,L and M offer huge performance improvement by drawing the number of stream elements to skip at each stage, so much less random numbers are generated, especially for very large streams. Z,K,L and M are typically 100's of times faster than R, while M is usually the most performant.</p>
+
+<p>In all these papers, the algorithms were formulated such that the fetching of elements from the stream is controlled by the algorithm (An external function, <em>GetNextElement()</em>, is called from within the algorithms). Such flow-control is generally less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member-function of the stream sampler class (<em>AddElement</em>) should be called.</p>
+
+<p>This implementation also extends the algorithms by supporting simultaneous extraction of any given number of independent sample sets.</p>
+
+<p>Two versions of <em>AddElement</em> are implemented: one using copy semantics (<em>AddElement(const ElementType&amp; Element)</em>) and one using move semantics (<em>AddElement(ElementType&amp;&amp; Element)</em>). Both functions return the number of future stream elements the caller should skip before calling <em>AddElement</em> again.</p>
+
+<p><em>StreamSamplerTest</em> contains a usage example: <em>StreamSamplerExample()</em>, a comparative performance benchmark function <em>StreamSamplerPerformanceBenchmark()</em> and a uniformity test function <em>StreamSamplerTestUniformity()</em>.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Streamsampler maintained by <a href="https://github.com/LiorKogan">LiorKogan</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
