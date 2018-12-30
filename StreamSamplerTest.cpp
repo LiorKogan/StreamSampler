@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 // ==========================================================================
-#include "stdafx.h"
 #include "StreamSamplerTest.h"
 
 #include "StreamSampler.h"
@@ -131,7 +130,7 @@ double ChiSqTest(double fV, uint64_t nDF)
 }
 
 // ==========================================================================
-// // Uniformity test for StreamSamplers
+// Uniformity test for StreamSamplers
 // ==========================================================================
 
 template <typename Alg> 
@@ -219,7 +218,7 @@ bool StreamSamplerTestUniformity()
 }
 
 // ==========================================================================
-// // Performance benchmark for StreamSamplers
+// Performance benchmark for StreamSamplers
 // ==========================================================================
 
 template <typename Alg> 
@@ -227,9 +226,9 @@ bool StreamSamplerTestPer(size_t nVals, size_t nSampleSize) // length of stream,
 {
     uint64_t nTrail   = 0                                   ;
     auto     base     = chrono::high_resolution_clock::now();
-    auto     TimeDiff = base - base                         ;
+    auto     TimeDiff = 0ns                                 ;
     
-    while (chrono::duration_cast<chrono::nanoseconds>(TimeDiff).count() < 10000000000) // 10 seconds
+    while (TimeDiff < 10s) // 10 seconds
     {
         ++nTrail;
         Alg Sampler(1, nSampleSize, nTrail); // one sample set of nSampleSize samples, different seed for each sample set

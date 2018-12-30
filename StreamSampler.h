@@ -333,15 +333,15 @@ uint64_t CStreamSamplerWOR_R0<ElementType, RNE>::AddElement(const ElementType& E
     if (!this->m_bValid)
         this->Reset();
 
-    if (this->m_nElements < this->m_nSetSize)                              // first m_nSetSize elements
+    if (this->m_nElements < this->m_nSetSize)                               // first m_nSetSize elements
         for (auto& vSampleSet : this->m_vSampleSets)
-            vSampleSet[this->m_nElements] = Element;                       // copy element into each SampleSet
+            vSampleSet[static_cast<size_t>(this->m_nElements)] = Element;   // copy element into each SampleSet
     else
-        for (size_t nSS = 0; nSS < this->m_nSampleSets; ++nSS)             // for each sample set
+        for (size_t nSS = 0; nSS < this->m_nSampleSets; ++nSS)              // for each sample set
         {
             auto r = uniform_int_distribution<uint64_t>(0, this->m_nElements)(this->m_vRndGen[nSS]); // inclusive range
             if (r < this->m_nSetSize)
-                this->m_vSampleSets[nSS][r] = Element;                     // copy element
+                this->m_vSampleSets[nSS][static_cast<size_t>(r)] = Element; // copy element
         }
 
     ++this->m_nElements;
@@ -355,27 +355,27 @@ uint64_t CStreamSamplerWOR_R0<ElementType, RNE>::AddElement(ElementType&& Elemen
     if (!this->m_bValid)
         this->Reset();
 
-    if (this->m_nElements < this->m_nSetSize)                              // first m_nSetSize elements
+    if (this->m_nElements < this->m_nSetSize)                                // first m_nSetSize elements
     {   
-        for (size_t nSS = 1; nSS < this->m_nSampleSets; ++nSS)             // copy element into each SampleSet except the 1st
+        for (size_t nSS = 1; nSS < this->m_nSampleSets; ++nSS)               // copy element into each SampleSet except the 1st
             this->m_vSampleSets[nSS][(size_t)this->m_nElements] = Element;
 
-        this->m_vSampleSets[0][(size_t)this->m_nElements] = move(Element); // move element into 1st SampleSet
+        this->m_vSampleSets[0][(size_t)this->m_nElements] = move(Element);   // move element into 1st SampleSet
     }
     else
     {
         ElementType* pS = nullptr;
-        for (size_t nSS = 0; nSS < this->m_nSampleSets; ++nSS)             // for each sample set
+        for (size_t nSS = 0; nSS < this->m_nSampleSets; ++nSS)               // for each sample set
         {
             auto r = uniform_int_distribution<uint64_t>(0, this->m_nElements)(this->m_vRndGen[nSS]); // inclusive range
             if (r < this->m_nSetSize)
             {
                 if (pS)
-                    this->m_vSampleSets[nSS][r] = *pS;                     // copy element
+                    this->m_vSampleSets[nSS][static_cast<size_t>(r)] = *pS;  // copy element
                 else
                 {
-                    pS  = &this->m_vSampleSets[nSS][r];
-                    *pS = move(Element);                                   // move element
+                    pS  = &this->m_vSampleSets[nSS][static_cast<size_t>(r)];
+                    *pS = move(Element);                                     // move element
                 }
             }
         }
@@ -622,7 +622,7 @@ inline void CStreamSamplerWOR_Z<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
     uint64_t& nS    = this->m_vnSkip[nSS];
     uint64_t  nTerm = this->m_nElements - this->m_nSetSize + 1;
 
-    if (this->m_nElements <= 22 * this->m_nSetSize) // execute algorithm X
+    if (this->m_nElements <= 22ull * this->m_nSetSize) // execute algorithm X
     {
         double fHs = (double)nTerm / (this->m_nElements + 1);
         double fV  = uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]);
@@ -699,7 +699,7 @@ inline void CStreamSamplerWOR_K<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
     uint64_t& nS    = this->m_vnSkip[nSS];
     uint64_t  nTerm = this->m_nElements - this->m_nSetSize + 1;
 
-    if (this->m_nElements <= 14 * this->m_nSetSize) // execute algorithm X
+    if (this->m_nElements <= 14ull * this->m_nSetSize) // execute algorithm X
     {
         double fHs = (double)nTerm / (this->m_nElements + 1);
         double fV  = uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]);
