@@ -36,12 +36,13 @@ static typename RNE::result_type RandomSeed()
 {
     random_device rd;
 
-    if (is_same<typename RNE::result_type, uint32_t>::value)      // if RNE::result_type is uint32_t: return 32-bit seed
+    if (is_same<typename RNE::result_type, uint32_t>::value) // if RNE::result_type is uint32_t: return 32-bit seed
         return rd();
-    else if (is_same<typename RNE::result_type, uint64_t>::value) // if RNE::result_type is uint64_t: return 64-bit seed
-        return ((uint64_t)rd() << 32) | rd();
-    else
-        throw invalid_argument("please modify StreamSampler::RandomSeed() according to the RNE used");
+    
+    if (is_same<typename RNE::result_type, uint64_t>::value) // if RNE::result_type is uint64_t: return 64-bit seed
+        return (static_cast<uint64_t>(rd()) << 32) | rd();
+    
+    throw invalid_argument("please modify StreamSampler::RandomSeed() according to the RNE used");
 }
 
 // ==========================================================================
@@ -95,8 +96,8 @@ public:
         : CStreamSampler<ElementType, RNE>(nSampleSets, nSetSize, nSeed) {}
 
     // always return 0 (no skip)
-    virtual uint64_t AddElement(const ElementType&  Element) override;
-    virtual uint64_t AddElement(      ElementType&& Element) override;
+    uint64_t AddElement(const ElementType&  Element) override;
+    uint64_t AddElement(      ElementType&& Element) override;
 };
 
 // ==========================================================================
@@ -113,10 +114,10 @@ public:
                       typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
     // return the number of future stream elements the caller should skip before calling AddElement again
-    virtual uint64_t AddElement(const ElementType&  Element) override;
-    virtual uint64_t AddElement(      ElementType&& Element) override;
+    uint64_t AddElement(const ElementType&  Element) override;
+    uint64_t AddElement(      ElementType&& Element) override;
 
-    virtual void Reset() override;
+    void Reset() override;
 
 protected:
     vector<uint64_t> m_vnSkip   ; // for each sample set: number of next elements to skip
@@ -148,7 +149,7 @@ public:
                         typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
 private:
-    void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
+    void DrawNext(size_t nSS) override; // [i] idx of sample set
 };
 
 // ==========================================================================
@@ -164,7 +165,7 @@ public:
                         typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
 private:
-    void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
+    void DrawNext(size_t nSS) override; // [i] idx of sample set
 };
 
 // ==========================================================================
@@ -180,7 +181,7 @@ public:
                         typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
 private:
-    void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
+    void DrawNext(size_t nSS) override; // [i] idx of sample set
 };
 
 // ==========================================================================
@@ -195,12 +196,12 @@ public:
                         size_t                    nSetSize                 ,   // [i] size of each sample set
                         typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
-    virtual void Reset() override;
+    void Reset() override;
 
 private:
     vector<double> m_vfW;
 
-    void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
+    void DrawNext(size_t nSS) override; // [i] idx of sample set
 };
 
 // ==========================================================================
@@ -215,13 +216,13 @@ public:
                         size_t                    nSetSize                 ,   // [i] size of each sample set
                         typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
-    virtual void Reset() override;
+    void Reset() override;
 
 private:
     const double   m_fHs;
     vector<double> m_vfW;
 
-    void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
+    void DrawNext(size_t nSS) override; // [i] idx of sample set
 };
 
 // ==========================================================================
@@ -236,12 +237,12 @@ public:
                         size_t                    nSetSize                 ,   // [i] size of each sample set
                         typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
-    virtual void Reset() override;
+    void Reset() override;
 
 private:
     vector<double> m_vfW;
 
-    void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
+    void DrawNext(size_t nSS) override; // [i] idx of sample set
 };
 
 // ==========================================================================
@@ -256,7 +257,7 @@ public:
                         size_t                    nSetSize                 ,   // [i] size of each sample set
                         typename RNE::result_type nSeed = RandomSeed<RNE>() ); // [i] RNE seed
 
-    virtual void Reset() override;
+    void Reset() override;
 
 private:
     const uint64_t   nR                 ;
@@ -264,7 +265,7 @@ private:
     vector<double  > m_vfU, m_vfW, m_vfQ;
     vector<uint64_t> m_vnT, m_vnCount   ;
 
-    void DrawNext(size_t nSampleSetIdx) override; // [i] idx of sample set
+    void DrawNext(size_t nSS) override; // [i] idx of sample set
 };
 
 
@@ -307,7 +308,7 @@ CStreamSampler<ElementType, RNE>::CStreamSampler(size_t                    nSamp
 template <typename ElementType, typename RNE> 
 void CStreamSampler<ElementType, RNE>::Reset()
 {
-    if (m_vSampleSets.size() == 0)
+    if (m_vSampleSets.empty())
         m_vSampleSets.assign(m_nSampleSets, vector<ElementType>(m_nSetSize));
 
     m_nElements = 0;
@@ -358,9 +359,9 @@ uint64_t CStreamSamplerWOR_R0<ElementType, RNE>::AddElement(ElementType&& Elemen
     if (this->m_nElements < this->m_nSetSize)                                // first m_nSetSize elements
     {   
         for (size_t nSS = 1; nSS < this->m_nSampleSets; ++nSS)               // copy element into each SampleSet except the 1st
-            this->m_vSampleSets[nSS][(size_t)this->m_nElements] = Element;
+            this->m_vSampleSets[nSS][static_cast<size_t>(this->m_nElements)] = Element;
 
-        this->m_vSampleSets[0][(size_t)this->m_nElements] = move(Element);   // move element into 1st SampleSet
+        this->m_vSampleSets[0][static_cast<size_t>(this->m_nElements)] = move(Element);   // move element into 1st SampleSet
     }
     else
     {
@@ -417,7 +418,7 @@ uint64_t CStreamSamplerWOR<ElementType, RNE>::AddElement(const ElementType& Elem
 
     if (this->m_nElements < this->m_nSetSize)                             // first m_nSetSize elements: fill reservoir
         for (auto& vSampleSet : this->m_vSampleSets)
-            vSampleSet[(size_t)this->m_nElements] = Element;              // copy element into each SampleSet
+            vSampleSet[static_cast<size_t>(this->m_nElements)] = Element; // copy element into each SampleSet
 
     if (++this->m_nElements >= this->m_nSetSize)                          // after initial fill of reservoir
     {
@@ -428,7 +429,7 @@ uint64_t CStreamSamplerWOR<ElementType, RNE>::AddElement(const ElementType& Elem
                 --m_vnSkip[nSS];                                          // skip current element
             else
             {
-                if (m_vnNextIdx[nSS] != (size_t)-1)                       // not on the (m_nSetSize-1)'th element
+                if (m_vnNextIdx[nSS] != static_cast<size_t>(-1))          // not on the (m_nSetSize-1)'th element
                     this->m_vSampleSets[nSS][m_vnNextIdx[nSS]] = Element; // copy element
 
                 DrawNext(nSS);                                            // draw number of next elements to skip and next index to replace
@@ -449,9 +450,9 @@ uint64_t CStreamSamplerWOR<ElementType, RNE>::AddElement(ElementType&& Element)
     if (this->m_nElements < this->m_nSetSize)                              // first m_nSetSize elements: fill reservoir
     {
         for (size_t nSS = 1; nSS < this->m_nSampleSets; ++nSS)             // copy element into each SampleSet except the 1st
-            this->m_vSampleSets[nSS][(size_t)this->m_nElements] = Element;
+            this->m_vSampleSets[nSS][static_cast<size_t>(this->m_nElements)] = Element;
 
-        this->m_vSampleSets[0][(size_t)this->m_nElements] = move(Element); // move element into 1st SampleSet
+        this->m_vSampleSets[0][static_cast<size_t>(this->m_nElements)] = move(Element); // move element into 1st SampleSet
     }
 
     if (++this->m_nElements >= this->m_nSetSize)                           // after initial fill of reservoir
@@ -464,7 +465,7 @@ uint64_t CStreamSamplerWOR<ElementType, RNE>::AddElement(ElementType&& Element)
                 --m_vnSkip[nSS];                                           // skip current element
             else
             {
-                if (m_vnNextIdx[nSS] != (size_t)-1)                        // not on the (m_nSetSize-1)'th element 
+                if (m_vnNextIdx[nSS] != static_cast<size_t>(-1))           // not on the (m_nSetSize-1)'th element 
                 {
                     if (pS)
                         this->m_vSampleSets[nSS][m_vnNextIdx[nSS]] = *pS;  // copy element
@@ -499,12 +500,12 @@ CStreamSamplerWOR_R<ElementType, RNE>::CStreamSamplerWOR_R(size_t               
 template <typename ElementType, typename RNE>
 inline void CStreamSamplerWOR_R<ElementType, RNE>::DrawNext(size_t nSS) // [i] idx of sample set
 {
-    while (1)
+    while (true)
     {
         uint64_t nNextIdx = uniform_int_distribution<uint64_t>(0, this->m_nElements + this->m_vnSkip[nSS])(this->m_vRndGen[nSS]); // inclusive range
         if (nNextIdx < this->m_nSetSize)
         {
-            this->m_vnNextIdx[nSS] = (size_t)nNextIdx;
+            this->m_vnNextIdx[nSS] = static_cast<size_t>(nNextIdx);
             break;
         }
 
@@ -528,13 +529,13 @@ CStreamSamplerWOR_X<ElementType, RNE>::CStreamSamplerWOR_X(size_t               
 template <typename ElementType, typename RNE>
 inline void CStreamSamplerWOR_X<ElementType, RNE>::DrawNext(size_t nSS) // [i] idx of sample set
 {
-    double fHs = (double)(this->m_nElements + 1 - this->m_nSetSize) / (this->m_nElements + 1);
+    double fHs = static_cast<double>(this->m_nElements + 1 - this->m_nSetSize) / (this->m_nElements + 1);
     double fV  = uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]);
 
     while (fHs > fV) // increase skip till fHs <= fV
     {
         ++this->m_vnSkip[nSS];
-        fHs *= (double)(this->m_nElements + 1 - this->m_nSetSize + this->m_vnSkip[nSS]) / (this->m_nElements + 1 + this->m_vnSkip[nSS]);
+        fHs *= static_cast<double>(this->m_nElements + 1 - this->m_nSetSize + this->m_vnSkip[nSS]) / (this->m_nElements + 1 + this->m_vnSkip[nSS]);
     }
 
     this->m_vnNextIdx[nSS] = uniform_int_distribution<size_t>(0, this->m_nSetSize - 1)(this->m_vRndGen[nSS]); // draw next index to replace
@@ -556,7 +557,7 @@ CStreamSamplerWOR_Y<ElementType, RNE>::CStreamSamplerWOR_Y(size_t               
 template <typename ElementType, typename RNE>
 inline void CStreamSamplerWOR_Y<ElementType, RNE>::DrawNext(size_t nSS) // [i] idx of sample set
 {
-    double fHs = (double)(this->m_nElements + 1 - this->m_nSetSize) / (this->m_nElements + 1);
+    double fHs = static_cast<double>(this->m_nElements + 1 - this->m_nSetSize) / (this->m_nElements + 1);
     double fV  = uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]);
 
     while (fHs > fV) // increase skip till fHs <= fV
@@ -566,9 +567,9 @@ inline void CStreamSamplerWOR_Y<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
         // double fDeltaS  = - (fHs - fV) / (fHsPlus1 - fHs); // Newton interpolation with discrete derivative
  
         // optimized
-        const uint64_t nZ     = this->m_nElements + 1 + this->m_vnSkip[nSS];
-        const double  fDeltaS = (fHs - fV) * (nZ + 1) / (fHs * this->m_nSetSize);
-        const uint64_t nS     = (uint64_t)ceil(fDeltaS);
+        const uint64_t nZ      = this->m_nElements + 1 + this->m_vnSkip[nSS];
+        const double   fDeltaS = (fHs - fV) * (nZ + 1) / (fHs * this->m_nSetSize);
+        const auto     nS      = static_cast<uint64_t>(ceil(fDeltaS));
 
         // naive (no advantage over Algorithm X)
         // for (uint64_t i = 1; i <= nS; ++i)
@@ -578,10 +579,10 @@ inline void CStreamSamplerWOR_Y<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
         // so the loop size is always <= m_nSetSize
         if (nS < this->m_nSetSize)
             for (uint64_t i = 1; i <= nS; ++i)
-                fHs *= (double)(nZ - this->m_nSetSize + i) / (nZ + i);
+                fHs *= static_cast<double>(nZ - this->m_nSetSize + i) / (nZ + i);
         else
             for (uint64_t i = 0; i < this->m_nSetSize; ++i)
-                fHs *= (double)(nZ - i) / (nZ + nS - i);
+                fHs *= static_cast<double>(nZ - i) / (nZ + nS - i);
 
         this->m_vnSkip[nSS]+= nS;
     }
@@ -624,20 +625,20 @@ inline void CStreamSamplerWOR_Z<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
 
     if (this->m_nElements <= 22ull * this->m_nSetSize) // execute algorithm X
     {
-        double fHs = (double)nTerm / (this->m_nElements + 1);
+        double fHs = static_cast<double>(nTerm) / (this->m_nElements + 1);
         double fV  = uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]);
 
         while (fHs > fV) // increase skip till fHs <= fV
         {
             ++nS;
-            fHs *= (double)(nTerm+nS) / (this->m_nElements + 1 + nS);
+            fHs *= static_cast<double>(nTerm+nS) / (this->m_nElements + 1 + nS);
         }
     }
-    else while (1)
+    else while (true)
     {
         double fU = uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]);
         double fX = (m_vfW[nSS] - 1.) * this->m_nElements;
-        nS = (uint64_t)floor(fX);
+        nS = static_cast<uint64_t>(floor(fX));
 
         // test if u<=h(s)/cg(x)
         double fRHS  = (this->m_nElements + fX) / (nTerm+nS) * nTerm;
@@ -655,7 +656,7 @@ inline void CStreamSamplerWOR_Z<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
         uint64_t nDenom = nTerm;
         uint64_t nNumer = (this->m_nSetSize < nS) ? nTerm+nS : this->m_nElements + 1;
         while (nNumer <= this->m_nElements + nS)
-            fY *= (double)nNumer++ / nDenom++;
+            fY *= static_cast<double>(nNumer++) / nDenom++;
 
         m_vfW[nSS] = pow(uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]), -1. / this->m_nSetSize); // generate W in advance
         if (pow(fY, 1. / this->m_nSetSize) <= (this->m_nElements + fX) / this->m_nElements)
@@ -674,7 +675,7 @@ CStreamSamplerWOR_K<ElementType, RNE>::CStreamSamplerWOR_K(size_t               
                                                            size_t                    nSetSize   ,  // [i] size of each sample set
                                                            typename RNE::result_type nSeed       ) // [i] random seed
     : CStreamSamplerWOR<ElementType, RNE>(nSampleSets, nSetSize, nSeed), 
-      m_fHs((double)nSetSize/2.), // a,b in Kim-Hung Li's paper
+      m_fHs(static_cast<double>(nSetSize) / 2.), // a,b in Kim-Hung Li's paper
       m_vfW(nSampleSets)
     {
         for (size_t nSS = 0; nSS < nSampleSets; ++nSS)
@@ -701,20 +702,20 @@ inline void CStreamSamplerWOR_K<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
 
     if (this->m_nElements <= 14ull * this->m_nSetSize) // execute algorithm X
     {
-        double fHs = (double)nTerm / (this->m_nElements + 1);
+        double fHs = static_cast<double>(nTerm) / (this->m_nElements + 1);
         double fV  = uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]);
 
         while (fHs > fV) // increase skip till fHs <= fV
         {
             ++nS;
-            fHs *= (double)(nTerm+nS) / (this->m_nElements + 1 + nS);
+            fHs *= static_cast<double>(nTerm + nS) / (this->m_nElements + 1 + nS);
         }
     }
-    else  while (1)
+    else while (true)
     {
         double fU = uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]);
         double fX = (m_vfW[nSS] - 1.) * (this->m_nElements - m_fHs);
-        nS = (uint64_t)floor(fX);
+        nS = static_cast<uint64_t>(floor(fX));
 
         // test if u<=h(s)/cg(x)
         double fRHS = (this->m_nElements + fX - m_fHs) / (nTerm + nS) * nTerm / (this->m_nElements - m_fHs);
@@ -731,7 +732,7 @@ inline void CStreamSamplerWOR_K<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
         uint64_t nDenom = nTerm;
         uint64_t nNumer = (this->m_nSetSize < nS) ? nTerm + nS : this->m_nElements + 1;
         while (nNumer <= this->m_nElements + nS)
-            fY *= (double)nNumer++ / nDenom++;
+            fY *= static_cast<double>(nNumer++) / nDenom++;
 
         m_vfW[nSS] = pow(uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]), -1. / this->m_nSetSize); // generate W in advance
         if (pow(fY, 1. / this->m_nSetSize) <= (this->m_nElements - m_fHs + fX) / (this->m_nElements - m_fHs))
@@ -771,7 +772,7 @@ void CStreamSamplerWOR_L<ElementType, RNE>::Reset()
 template <typename ElementType, typename RNE>
 inline void CStreamSamplerWOR_L<ElementType, RNE>::DrawNext(size_t nSS) // [i] idx of sample set
 {
-    this->m_vnSkip   [nSS]  = (uint64_t)floor(log(uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS])) / log(1. - m_vfW[nSS]));
+    this->m_vnSkip   [nSS]  = static_cast<uint64_t>(floor(log(uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS])) / log(1. - m_vfW[nSS])));
     this->m_vnNextIdx[nSS]  = uniform_int_distribution<size_t>(0, this->m_nSetSize - 1)(this->m_vRndGen[nSS]);           // draw next index to replace
           m_vfW      [nSS] *= pow(uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS]), 1. / this->m_nSetSize); // generate W in advance
 }
@@ -793,7 +794,7 @@ inline double beta_distribution(RNE& engine, double a0, double b0)
     double gamma = a + 1 / beta;
     double w;
 
-    while (1)
+    while (true)
     {
         double u1 = uniform_real_distribution<double>(0, 1)(engine);
         double u2 = uniform_real_distribution<double>(0, 1)(engine);
@@ -814,7 +815,7 @@ inline double beta_distribution(RNE& engine, double a0, double b0)
             break;
     }
 
-    return (a == a0)  ?  w / (b + w) : b / (b + w);
+    return (a == a0) ?  w / (b + w) : b / (b + w);
 }
 
 // --------------------------------------------------------------------------
@@ -827,14 +828,14 @@ CStreamSamplerWOR_M<ElementType, RNE>::CStreamSamplerWOR_M(size_t               
                                                            size_t                    nSetSize   ,  // [i] size of each sample set
                                                            typename RNE::result_type nSeed       ) // [i] random seed
     : CStreamSamplerWOR<ElementType, RNE>(nSampleSets, nSetSize, nSeed),
-      nR((uint64_t)floor(fStreamSamplerWOR_M_Tau * sqrt(nSetSize))),
+      nR(static_cast<uint64_t>(floor(fStreamSamplerWOR_M_Tau * sqrt(nSetSize)))),
       m_vbStep2(nSampleSets), m_vfU(nSampleSets), m_vfW(nSampleSets), m_vfQ(nSampleSets), m_vnT(nSampleSets), m_vnCount(nSampleSets)
     {
         double fH = 0; // sum(1 / u); u = nSetSize ... nSetSize+nR
         for (uint64_t i = nSetSize; i <= nSetSize + nR; ++i)
             fH += 1. / i;
     
-        uint64_t nC = (uint64_t)floor(fStreamSamplerWOR_M_Theta * (fStreamSamplerWOR_M_Tau * fStreamSamplerWOR_M_Tau / 2. + 1. + nR) / fH - nSetSize);
+        auto nC = static_cast<uint64_t>(floor(fStreamSamplerWOR_M_Theta * (fStreamSamplerWOR_M_Tau * fStreamSamplerWOR_M_Tau / 2. + 1. + nR) / fH - nSetSize));
 
         for (size_t nSS = 0; nSS < nSampleSets; ++nSS)
         {           
@@ -858,7 +859,7 @@ void CStreamSamplerWOR_M<ElementType, RNE>::Reset()
     for (uint64_t i = this->m_nSetSize; i <= this->m_nSetSize + nR; ++i)
         fH += 1. / i;
     
-    uint64_t nC = (uint64_t)floor(fStreamSamplerWOR_M_Theta * (fStreamSamplerWOR_M_Tau * fStreamSamplerWOR_M_Tau / 2. + 1. + nR) / fH - this->m_nSetSize);
+    auto nC = static_cast<uint64_t>(floor(fStreamSamplerWOR_M_Theta * (fStreamSamplerWOR_M_Tau * fStreamSamplerWOR_M_Tau / 2. + 1. + nR) / fH - this->m_nSetSize));
 
     for (size_t nSS = 0; nSS < this->m_nSampleSets; ++nSS)
     {           
@@ -876,10 +877,10 @@ inline void CStreamSamplerWOR_M<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
     while (m_vnCount[nSS] > 0)
     {
         if (m_vbStep2[nSS])
-            this->m_vnSkip[nSS] += (uint64_t)floor(log(uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS])) / m_vfQ[nSS]);
+            this->m_vnSkip[nSS] += static_cast<uint64_t>(floor(log(uniform_real_distribution<double>(0, 1)(this->m_vRndGen[nSS])) / m_vfQ[nSS]));
 
         --m_vnCount [nSS];
-        m_vfU       [nSS] *= (1. + (double)this->m_nSetSize / ++m_vnT[nSS]);
+        m_vfU       [nSS] *= (1. + static_cast<double>(this->m_nSetSize) / ++m_vnT[nSS]);
 
         if (1 <= m_vfU[nSS])
         {
@@ -894,7 +895,7 @@ inline void CStreamSamplerWOR_M<ElementType, RNE>::DrawNext(size_t nSS) // [i] i
           m_vbStep2  [nSS]  = true;
           m_vnCount  [nSS]  = nR;
           m_vfQ      [nSS]  = log(1. - m_vfW[nSS]);
-    this->m_vnSkip   [nSS] += (uint64_t)floor(log(m_vfU[nSS]) / m_vfQ[nSS]);
+    this->m_vnSkip   [nSS] += static_cast<uint64_t>(floor(log(m_vfU[nSS]) / m_vfQ[nSS]));
           m_vnT      [nSS]  = 0;
           m_vfW      [nSS] *= beta_distribution(this->m_vRndGen[nSS], this->m_nSetSize + 0., nR + 1.);
           m_vfU      [nSS]  = uniform_real_distribution<double>(0, 1                   )(this->m_vRndGen[nSS]);    

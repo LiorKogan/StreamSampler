@@ -18,7 +18,6 @@
 #include <vector>
 #include <numeric>
 #include <functional>
-#include <math.h>
 
 using namespace std;
 using namespace StreamSampler;
@@ -31,7 +30,7 @@ using namespace StreamSampler;
 class SimpleStream
 {
 public:
-    SimpleStream(size_t nStreamSize)
+    explicit SimpleStream(size_t nStreamSize)
         : m_nStreamSize(nStreamSize), m_nNextElement(0)
     {}
 
@@ -59,7 +58,7 @@ bool StreamSamplerExample()
     size_t   Element  ;                                // stream element
 
     while (Stream.GetNextElement(Element))             // while not end of stream
-        nSkip ? --nSkip : nSkip = StreamSampler.AddElement(Element);
+        nSkip != 0u ? --nSkip : nSkip = StreamSampler.AddElement(Element);
 
     auto SampleSets = StreamSampler.GetSampleSets();   // get sample sets
 
@@ -85,13 +84,14 @@ bool StreamSamplerExample()
 // gamma(z) when 2*fZ is integer
 double Gamma(double fZ)
 {
-    uint64_t nTmp = (uint64_t)(2. * fZ);
+    auto nTmp = static_cast<uint64_t>(2. * fZ);
     if (nTmp != 2. * fZ || fZ == 0)
         throw invalid_argument("Gamma: invalid argument"); 
 
-         if (nTmp == 1) return 1.7724538509055160272981674833411; // sqrt(PI)
-    else if (nTmp == 2) return 1.                               ;
-    else                return (fZ - 1.) * Gamma(fZ - 1.)       ;
+    if (nTmp == 1) return 1.7724538509055160272981674833411; // sqrt(PI)
+    if (nTmp == 2) return 1.                               ;
+    
+    return (fZ - 1.) * Gamma(fZ - 1.);
 }
 
 // CDF of Standard Normal
@@ -159,12 +159,12 @@ bool StreamSamplerTestUnif()
             uint64_t i1 = 0;
 
             while (i1 < nVals)
-                i1 += 1 + Sampler1.AddElement(i1 % nBins        );
+                i1 += 1 + Sampler1.AddElement(i1 % nBins);
 
-            auto SS1 = Sampler1.GetSampleSets(); // also reset the samples
-            for (auto& Set : SS1)                // for each sample set
-                for (auto& n : Set)              // for each sample
-                    ++vnCounts1[(size_t)n];      // inc count of this value
+            auto SS1 = Sampler1.GetSampleSets();         // also reset the samples
+            for (auto& Set : SS1)                        // for each sample set
+                for (auto& n : Set)                      // for each sample
+                    ++vnCounts1[static_cast<size_t>(n)]; // inc count of this value
 
             // ----- type 2 test
             uint64_t i2 = 0;
@@ -172,10 +172,10 @@ bool StreamSamplerTestUnif()
             while (i2 < nVals)
                 i2 += 1 + Sampler2.AddElement(i2 / (nVals / nBins));
 
-            auto SS2 = Sampler2.GetSampleSets(); // also reset the samples
-            for (auto& Set : SS2)                // for each sample set
-                for (auto& n : Set)              // for each sample
-                    ++vnCounts2[(size_t)n];      // inc count of this value
+            auto SS2 = Sampler2.GetSampleSets();         // also reset the samples
+            for (auto& Set : SS2)                        // for each sample set
+                for (auto& n : Set)                      // for each sample
+                    ++vnCounts2[static_cast<size_t>(n)]; // inc count of this value
         }
 
         // check for uniformity (same count per bin) using chi-square test
@@ -239,7 +239,7 @@ bool StreamSamplerTestPer(size_t nVals, size_t nSampleSize) // length of stream,
         TimeDiff = chrono::high_resolution_clock::now() - base;
     }
 
-    cout << (double)nTrail / chrono::duration_cast<chrono::nanoseconds>(TimeDiff).count() * 1e9 << " trails/sec\n";
+    cout << static_cast<double>(nTrail) / chrono::duration_cast<chrono::nanoseconds>(TimeDiff).count() * 1e9 << " trails/sec\n";
     return true;
 }
 
