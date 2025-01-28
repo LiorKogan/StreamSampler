@@ -26,7 +26,7 @@ In all these papers, the algorithms were formulated such that the algorithm cont
 
 Two versions of *AddElement* are implemented: one using copy semantics (*AddElement(const ElementType& Element)*) and one using move semantics (*AddElement(ElementType&& Element)*).
 
-This implementation also extends the algorithms by supporting simultaneous extraction of any given number of independent sample sets.
+This implementation also extends the algorithms by supporting simultaneous construction of multiple independent sample sets.
 
 *StreamSamplerTest* contains a usage example: *StreamSamplerExample()*, a comparative performance benchmark function *StreamSamplerPerformanceBenchmark()* and a uniformity test function *StreamSamplerTestUniformity()*.
 
