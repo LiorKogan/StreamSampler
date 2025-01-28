@@ -8,7 +8,7 @@ Released under the Apache License, Version 2.0
 
 --
 
-A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of data elements made available over time. The number of elements in the stream is usually large and unknown a priori. A **stream sampler** maintains an up-to-date one or more sample sets, each with a fixed number of elements. 
+A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of data elements made available over time. The number of elements in the stream is usually large and unknown a priori. A **stream sampler** maintains one or more up-to-date sample sets, each with a fixed number of elements. 
 
 A stream sampler is an [online algorithm](https://en.wikipedia.org/wiki/Online_algorithm): The size of the input is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. The sample sets are always up-to-date.
 
