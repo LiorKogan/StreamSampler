@@ -12,7 +12,7 @@ A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of da
 
 A **stream sampler** maintains one or more up-to-date sample sets, each with a fixed number of elements. Stream samplers are implemented using [online algorithms](https://en.wikipedia.org/wiki/Online_algorithm): The size of the input is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. During the pass, the sample sets are kept up-to-date.
 
-We concentrate here on [simple random sampling](https://www.scribbr.com/methodology/simple-random-sampling/): for each sample set, each stream element (from the start of the sampling till the latest element available) has an equal chance of being a member. 
+We concentrate here on [simple random samples](https://www.scribbr.com/methodology/simple-random-sampling/): for each sample set, each stream element (from the start of the sampling till the latest element available) has an equal chance of being a member. 
 
 The following seven unweighted [sampling without replacement](https://en.wikipedia.org/wiki/Simple_random_sample) [reservoir](https://en.wikipedia.org/wiki/Reservoir_sampling) [randomized](https://en.wikipedia.org/wiki/Randomized_algorithm) algorithms are implemented:
 
