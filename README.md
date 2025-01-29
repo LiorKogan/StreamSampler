@@ -16,7 +16,7 @@ We concentrate here on [simple random samples](https://www.scribbr.com/methodolo
 
 Up-to-dateness means that each sample set remains a simple random sample as stream element becomes available.
 
-Stream samplers are implemented using [online algorithms](https://en.wikipedia.org/wiki/Online_algorithm): the size of the input is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. The memory size required by each stream sampler is constant and very small.
+Stream samplers are implemented using [online algorithms](https://en.wikipedia.org/wiki/Online_algorithm): The size of the stream is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. The memory size required by each stream sampler is constant and very small.
 
 The following seven unweighted [sampling without replacement](https://en.wikipedia.org/wiki/Simple_random_sample) [reservoir](https://en.wikipedia.org/wiki/Reservoir_sampling) [randomized](https://en.wikipedia.org/wiki/Randomized_algorithm) algorithms are implemented:
 
