@@ -1,6 +1,6 @@
 # StreamSampler
 
-Header-only C++11 library
+A header-only C++11 library
 
 Copyright 2015 Lior Kogan (koganlior1@gmail.com)
 
