@@ -12,7 +12,7 @@ A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of da
 
 For a stream, a _simple random sample set_ is a sample set where each stream element (from the start of the sampling till the latest available element) has an equal chance of being a member.
 
-A **stream sampler** maintains one or more up-to-date simple random sample sets, each with a fixed number of elements. Up-to-dateness means that each sample set remains a simple random sample set as stream element becomes available.
+A **stream sampler** maintains one or more simple random sample sets, each with a fixed number of elements. As stream elements become available, the sample sets are updated to remain simple random.
 
 Stream samplers are implemented using [online algorithms](https://en.wikipedia.org/wiki/Online_algorithm): The size of the stream is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. 
 
