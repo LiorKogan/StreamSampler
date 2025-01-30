@@ -8,15 +8,15 @@ Released under the Apache License, Version 2.0
 
 --
 
-A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of data elements made available over time. The number of elements in the stream is usually unknown a priori and can be large or even infinite.
+A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of data elements made available over time. The number of elements in the stream is usually unknown a priori and can be large or infinite.
 
-A **stream sampler** maintains one or more up-to-date sample sets, each with a fixed number of elements.
+For a stream, a _simple random sample set_ is a sample set where each stream element (from the start of the sampling till the latest available element) has an equal chance of being a member.
 
-We concentrate here on [simple random samples](https://www.scribbr.com/methodology/simple-random-sampling/): for each sample set, each stream element (from the start of the sampling till the latest element available) has an equal chance of being a member.
+A **stream sampler** maintains one or more up-to-date simple random sample sets, each with a fixed number of elements. Up-to-dateness means that each sample set remains a simple random sample set as stream element becomes available.
 
-Up-to-dateness means that each sample set remains a simple random sample as stream element becomes available.
+Stream samplers are implemented using [online algorithms](https://en.wikipedia.org/wiki/Online_algorithm): The size of the stream is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. 
 
-Stream samplers are implemented using [online algorithms](https://en.wikipedia.org/wiki/Online_algorithm): The size of the stream is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. The memory size required by each stream sampler is constant and very small.
+The time complexity of stream samplers is linear or [sub-linear](https://en.wikipedia.org/wiki/Time_complexity#Sub-linear_time), and the space complexity is constant.
 
 The following seven unweighted [sampling without replacement](https://en.wikipedia.org/wiki/Simple_random_sample) [reservoir](https://en.wikipedia.org/wiki/Reservoir_sampling) [randomized](https://en.wikipedia.org/wiki/Randomized_algorithm) algorithms are implemented:
 
@@ -26,7 +26,7 @@ The following seven unweighted [sampling without replacement](https://en.wikiped
 
 Algorithm R is the standard 'textbook algorithm'. Algorithms X, Y, Z, K, L, and M offer huge performance improvement by drawing the number of stream elements to skip at each stage, so much less random numbers are generated, especially for large streams. Z, K, L, and M are typically 100's of times faster than R, while M is usually the most performant.
 
-In all these papers, the algorithms were formulated such that the algorithm controls elements fetching from the stream (An external function, *GetNextElement()*, is called from within the algorithms). Such flow control is generally less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member function of the stream sampler class (*AddElement*) should be called. *AddElement* returns the number of future stream elements the caller should skip before calling *AddElement* again (hence the sublinear complexity).
+In all these papers, the algorithms were formulated such that the algorithm controls elements fetching from the stream (An external function, *GetNextElement()*, is called from within the algorithms). Such flow control is generally less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member function of the stream sampler class (*AddElement*) should be called. *AddElement* returns the number of future stream elements the caller should skip before calling *AddElement* again (hence the sub-linear time complexity).
 
 Two versions of *AddElement* are implemented: one using copy semantics (*AddElement(const ElementType& Element)*) and one using move semantics (*AddElement(ElementType&& Element)*).
 
