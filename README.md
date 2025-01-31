@@ -14,7 +14,7 @@ A _simple random sample_ of a stream is a subset of the stream elements, such th
 
 A **stream sampler** maintains one or more simple random samples, each with a fixed number of elements. As stream elements become available, the samples are updated to remain simple random samples.
 Stream samplers are implemented using [online algorithms](https://en.wikipedia.org/wiki/Online_algorithm): The size of the stream is unknown, and only [one pass](https://en.wikipedia.org/wiki/One-pass_algorithm) over the stream is possible. 
-The time complexity of stream samplers is linear or [sub-linear](https://en.wikipedia.org/wiki/Time_complexity#Sub-linear_time), and the space complexity is constant.
+The time complexity of stream samplers is linear or [sub-linear](https://en.wikipedia.org/wiki/Time_complexity#Sub-linear_time) and the space complexity is constant.
 
 The following seven unweighted [sampling without replacement](https://en.wikipedia.org/wiki/Simple_random_sample) [reservoir](https://en.wikipedia.org/wiki/Reservoir_sampling) [randomized](https://en.wikipedia.org/wiki/Randomized_algorithm) algorithms are implemented:
 
