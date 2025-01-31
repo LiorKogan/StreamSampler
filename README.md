@@ -26,9 +26,8 @@ Algorithm R is the standard 'textbook algorithm'. Algorithms X, Y, Z, K, L, and 
 
 In all these papers, the algorithms were formulated to control the element fetching from the stream (An external function, *GetNextElement()*, is called by the algorithms). Such flow control is usually less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream and call a member function of the stream sampler class - *AddElement*. This function returns the number of stream elements the caller should skip before calling it again.
 
-Two versions of *AddElement* are provided: one with copy semantics (*AddElement(const ElementType& Element)*) and one with move semantics (*AddElement(ElementType&& Element)*).
-
 This implementation also extends the algorithms by supporting the construction of multiple independent samples.
 
-*StreamSamplerTest* contains a usage example: *StreamSamplerExample()*, a comparative performance benchmark function *StreamSamplerPerformanceBenchmark()* and a uniformity test function *StreamSamplerTestUniformity()*.
+Two versions of *AddElement* are provided: one with copy semantics (*AddElement(const ElementType& Element)*) and one with move semantics (*AddElement(ElementType&& Element)*).
 
+*StreamSamplerTest* contains a usage example: *StreamSamplerExample()*, a comparative performance benchmark function *StreamSamplerPerformanceBenchmark()* and a uniformity test function *StreamSamplerTestUniformity()*.
