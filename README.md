@@ -26,7 +26,7 @@ The following seven unweighted [sampling without replacement](https://en.wikiped
 
 Algorithm R is the standard 'textbook algorithm'. Algorithms X, Y, Z, K, L, and M offer huge performance improvement by drawing the number of stream elements to skip at each stage, so much fewer random numbers need to be generated, especially for large streams (hence the sub-linear time complexity). Z, K, L, and M are typically much faster than R, while M is usually the most performant.
 
-In all these papers, the algorithms were formulated to control the element fetching from the stream (An external function, *GetNextElement()*, is called by the algorithms). Such flow control is generally less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member function of the stream sampler class (*AddElement*) should be called. *AddElement* returns the number of future stream elements the caller should skip before calling *AddElement* again.
+In all these papers, the algorithms were formulated to control the element fetching from the stream (An external function, *GetNextElement()*, is called by the algorithms). Such flow control is usually less suitable for real-world scenarios. In this implementation, the algorithms were reformulated such that a process can fetch elements from the stream, and a member function of the stream sampler class (*AddElement*) should be called. *AddElement* returns the number of future stream elements the caller should skip before calling *AddElement* again.
 
 Two versions of *AddElement* are implemented: one using copy semantics (*AddElement(const ElementType& Element)*) and one using move semantics (*AddElement(ElementType&& Element)*).
 
