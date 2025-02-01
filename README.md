@@ -8,7 +8,7 @@ Released under the Apache License, Version 2.0
 
 --
 
-A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of data elements made available over time. The number of elements in the stream is usually unknown a priori and can be large or infinite.
+A [stream](https://en.wikipedia.org/wiki/Stream_(computing)) is a sequence of data elements made available over time. The number of elements in the stream is usually unknown a priori and can be very large.
 
 A _simple random sample_ of a stream is a subset of the stream elements, such that each stream element (from the start of the sampling till the latest available element) has an equal probability of being included in the sample.
 
