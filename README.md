@@ -2,7 +2,7 @@
 
 A header-only C++11 library
 
-Copyright 2015 Lior Kogan (koganlior1@gmail.com)
+Copyright © 2015 Lior Kogan (koganlior1 [at] gmail [dot] com)
 
 Released under the Apache License, Version 2.0
 
